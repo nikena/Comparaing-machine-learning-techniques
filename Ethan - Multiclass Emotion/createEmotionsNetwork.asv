@@ -1,4 +1,4 @@
-function [emotionsNetwork, avgf1scores, confusionMatricies, recall, precision] = createEmotionsNetwork()
+function [emotionsNetwork] = createEmotionsNetwork()
     % Load emotions data, must be in same folder
     load("emotions_data.mat");
     
@@ -55,10 +55,12 @@ function [emotionsNetwork, avgf1scores, confusionMatricies, recall, precision] =
             recall(i,j) = confusionMatricies(i,j,j)/sum(confusionMatricies(i,j,:));
             precision(i,j) = confusionMatricies(i,j,j)/sum(confusionMatricies(i,:,j));
         end
+        
+        plotconfusion(testTargets, outMax);
     end
     
     % Calculate F1 scores
-    fscores = zeros(k, classes); % Get every f score from precision and recall
+    fscores = zeros(k, classes) % Get every f score from precision and recall
     for i = 1:k
         for j = 1:classes
             fscores(i,j) = fscore(1, recall(i,j), precision(i,j));
@@ -66,9 +68,9 @@ function [emotionsNetwork, avgf1scores, confusionMatricies, recall, precision] =
     end
     
     % Averages
-    avgf1scores = 1:classes;
+    avgfscores = 1:classes;
     for i = 1:classes
-        avgf1scores(i) = mean(fscores(:,i));
+        a
     end
 end
 

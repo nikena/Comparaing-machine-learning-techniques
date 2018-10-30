@@ -1,4 +1,4 @@
-function [binarySmileNetwork ] = BinarySmile()
+
     %load in and reshape data so it can be trained.
     load('facialPoints.mat');
     points = reshape(points, [132, 150]);
@@ -15,7 +15,10 @@ function [binarySmileNetwork ] = BinarySmile()
     for i = 1:cv.NumTestSets
         % Training loop
         %Create a new binarySmileNetwork with 10 hidden nodes.
-        binarySmileNetwork = newff(points, labels, 10);
+        trainingFcn = 'trainlm'; %traingd, traingda, traingdm, traingdx, trainlm
+        learningFcn = 'learngdm'; %learngd or learngdm
+
+        binarySmileNetwork = newff(points, labels, 10, {'tansig' 'purelin'}, trainingFcn, learningFcn);
     
         binarySmileNetwork.name = 'BinarySmile';
         binarySmileNetwork.trainParam.epochs = 100;
@@ -33,6 +36,11 @@ function [binarySmileNetwork ] = BinarySmile()
         t = sim(binarySmileNetwork, testX);
         predicted = [predicted t];
         actual = [actual testY];
+    end
+    
+[c, cm] = confusion(actual, predicted);
+plotconfusion(actual, predicted);
+trace(cm)/sum(cm, 'all')
         
         [c, cm] = confusion(testY, t);
 

@@ -52,8 +52,7 @@ function emotionsNetwork = createEmotionsNetwork()
         end
         
         % Confusion matrix
-        [c,cm] = confusion(testTarget, outMax);
-        %plotconfusion(testTarget, outMax);
+        confusionMatrix = myConfusion(testTarget, outMax);
         
         accuracy(i) = 1-c;
     end
@@ -63,4 +62,14 @@ function emotionsNetwork = createEmotionsNetwork()
     xlabel("k");
     ylabel("Accuracy (Mean = "+mean(accuracy)+")");
     axis([1, k, 0, 1]);
+end
+
+function confusionMatrix = myConfusion(targets, outputs)
+    l = size(targets, 1);
+    confusionMatrix = zeros(l, l);
+    for i = 1:length(targets)
+        [a,x] = max(targets(:, i));
+        [a,y] = max(outputs(:, i));
+        confusionMatrix(x,y) = confusionMatrix(x,y) + 1;
+    end
 end

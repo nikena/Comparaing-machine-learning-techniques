@@ -4,7 +4,11 @@ function emotionsNetwork = createEmotionsNetwork()
     
     % Transpose x and y
     x=x';
-    y=y';
+    target = zeros(length(y), 6);
+    for i = 1:length(y)
+        target(i, y(i)) = 1;
+    end
+    y=target';
     
     % Create emotions network
     emotionsNetwork = newff(x, y, 10);

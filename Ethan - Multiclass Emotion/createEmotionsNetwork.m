@@ -4,17 +4,15 @@ function emotionsNetwork = createEmotionsNetwork()
     
     % Transpose x and y
     x=x';
-    target = zeros(length(y), 6);
-    for i = 1:length(y)
+    ySize = length(y);
+    target = zeros(ySize, 6);
+    for i = 1:ySize
         target(i, y(i)) = 1;
     end
     y=target';
     
     % Create emotions network
     emotionsNetwork = newff(x, y, 10);
-    
-    % Divide by indexes
-    emotionsNetwork.divideFcn = 'divideind';
     
     % Modify train parameters
     emotionsNetwork.trainParam.show = 5;
@@ -23,15 +21,46 @@ function emotionsNetwork = createEmotionsNetwork()
     % Training setup
     k = 10; % k in k-cross validation
     s = size(x, 2); % size of input set
-    valInd = round(s*0.9, 0):s; % Last 10% is validation set
-    emotionsNetwork.divideParam.valInd = valInd;
-    s = round(s*0.9, 0) - 1; % Decrease size of set as we don't want to use validation set in training / testing
+    
+    indices = cvpartition(ySize,'KFold', k);
+        
+    %valInd = round(s*0.9, 0):s; % Last 10% is validation set
+    %emotionsNetwork.divideParam.valInd = valInd;
+    %s = round(s*0.9, 0) - 1; % Decrease size of set as we don't want to use validation set in training / testing
+    
+    accuracy = 1:k;
     
     % Training loop
     for i = 1:k
-        testInd = ((i-1)*(round(s/k,0)))+1:i*(round(s/k,0)); % Indicies in test set, all else in training set
-        emotionsNetwork.divideParam.testInd = testInd;
-        emotionsNetwork.divideParam.trainInd = setdiff(1:s, testInd); % All non-testInd into training set Larger set on left of setdiff
-        emotionsNetwork = train(emotionsNetwork, x, y);
+        % Assign test and training indicies
+        testLabels = x(:, indices.test(i));
+        testTarget = y(:, indices.test(i));
+        trainLabels = x(:, indices.training(i));
+        trainTarget = y(:, indices.training(i));
+        
+        % Train
+        emotionsNetwork = train(emotionsNetwork, trainLabels, trainTarget);
+        
+        % Get output from test
+        out = sim(emotionsNetwork, testLabels);
+        [unused, index] = max(out);
+    
+        % Convert output to classification
+        outMax = zeros(6, indices.TestSize(i));
+        for j = 1 : indices.TestSize(i)
+            outMax(index(j), j) = 1;
+        end
+        
+        % Confusion matrix
+        [c,cm] = confusion(testTarget, outMax);
+        %plotconfusion(testTarget, outMax);
+        
+        accuracy(i) = 1-c;
     end
+    
+    plot(accuracy, '-x', 'MarkerIndices', 1:k)
+    title("Accuracy of network on each fold");
+    xlabel("k");
+    ylabel("Accuracy (Mean = "+mean(accuracy)+")");
+    axis([1, k, 0, 1]);
 end

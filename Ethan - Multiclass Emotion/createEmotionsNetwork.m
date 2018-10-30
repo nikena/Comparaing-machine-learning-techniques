@@ -19,15 +19,15 @@ function emotionsNetwork = createEmotionsNetwork()
     % Training setup
     k = 10; % k in k-cross validation
     s = size(x, 2); % size of input set
-    testInd = round(s*0.9, 0):s; % Last 10% is test set
-    emotionsNetwork.divideParam.testInd = testInd;
-    s = round(s*0.9, 0) - 1; % Decrease size of set as we don't want to use test set in training / validation
+    valInd = round(s*0.9, 0):s; % Last 10% is validation set
+    emotionsNetwork.divideParam.valInd = valInd;
+    s = round(s*0.9, 0) - 1; % Decrease size of set as we don't want to use validation set in training / testing
     
     % Training loop
     for i = 1:k
-        validInd = ((i-1)*(round(s/k,0)))+1:i*(round(s/k,0)); % Indicies in validation set, all else in train set
-        emotionsNetwork.divideParam.valInd = validInd;
-        emotionsNetwork.divideParam.trainInd = setdiff(1:s, validInd); % Larger set on left of setdiff
+        testInd = ((i-1)*(round(s/k,0)))+1:i*(round(s/k,0)); % Indicies in test set, all else in training set
+        emotionsNetwork.divideParam.testInd = testInd;
+        emotionsNetwork.divideParam.trainInd = setdiff(1:s, testInd); % All non-testInd into training set Larger set on left of setdiff
         emotionsNetwork = train(emotionsNetwork, x, y);
     end
 end

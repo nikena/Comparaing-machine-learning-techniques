@@ -10,7 +10,7 @@ function  [splitTrainGroups, splitTestGroups, trainSize, testSize] = kFoldSplitD
     perm = randperm(dataNums);
     
     % Assign number to each fold, and makse sure the maxNum - minNum <= 1
-    oneTestNum = round(dataNums / k); 
+    oneTestNum = floor(dataNums / k); 
     testSize = zeros(1, k);
     trainSize = zeros(1, k);
     for i = 1:k

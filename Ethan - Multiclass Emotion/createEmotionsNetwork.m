@@ -18,7 +18,7 @@ function [emotionsNetwork, avgf1scores, confusionMatricies, recall, precision] =
     % Training setup
     k = 10; % k in k-cross validation
     s = length(x); % Re-get size of input set after validation part
-    indices = cvpartition(s,'KFold', k); % Parition data into k folds
+    [trainIndxs, testIndxs, trainSize, testSize] = kFoldSplitData(s,k); % Parition data into k folds
     % Modify train parameters
     emotionsNetwork.trainParam.show = 5;
     emotionsNetwork.trainParam.epochs = 100;
@@ -30,10 +30,10 @@ function [emotionsNetwork, avgf1scores, confusionMatricies, recall, precision] =
     % Training loop
     for i = 1:k
         % Assign test and training indicies
-        testLabels = x(:, indices.test(i));
-        testTargets = y(:, indices.test(i));
-        trainLabels = x(:, indices.training(i));
-        trainTargets = y(:, indices.training(i));
+        testLabels = x(:, testIndxs(:,i));
+        testTargets = y(:, testIndxs(:,i));
+        trainLabels = x(:, trainIndxs(:,i));
+        trainTargets = y(:, trainIndxs(:,i));
         
         % Train
         emotionsNetwork = train(emotionsNetwork, trainLabels, trainTargets);

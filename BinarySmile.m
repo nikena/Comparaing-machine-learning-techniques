@@ -1,4 +1,3 @@
-
     %load in and reshape data so it can be trained.
     load('facialPoints.mat');
     points = reshape(points, [132, 150]);
@@ -38,7 +37,7 @@
         actual = [actual testY];
     end
     
-[c, cm] = confusion(actual, predicted);
+[c, cm] = confusionMatrix(actual, predicted);
 plotconfusion(actual, predicted);
 trace(cm)/sum(cm, 'all')
         

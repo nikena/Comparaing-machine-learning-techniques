@@ -52,10 +52,10 @@ function decisionTree = DecisionTreeLearning(features, labels)
             % else subtree ß DECISION-TREE-LEARNING(examplesi , targets)
             % return tree
             if subFeatures == []
-                decisionTree = MajorityValue(labels);
+                decisionTree.kids{j} = MajorityValue(labels);
                 return
             else
-                decisionTree.kids{1} = DecisionTreeLearning(subFeatures, subLabels);
+                decisionTree.kids{j} = DecisionTreeLearning(subFeatures, subLabels);
             end
         end  
     end

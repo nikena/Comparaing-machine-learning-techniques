@@ -5,7 +5,6 @@
 function decisionTree = DecisionTreeLearning(features, labels)
 
     decisionTree = struct();
-    x = 0;
  % if all examples have the same label then return a leaf node with label = the label   
     decisionTree.op = "";
     same = true;
@@ -45,7 +44,6 @@ function decisionTree = DecisionTreeLearning(features, labels)
             [subFeatures, subLabels] = ;
             
 %             decisionTree.kids = cell{x + 1};
-%             x = x+1;
 
             % if examplesi is empty then return a leaf node with label =
             % MAJORITY- VALUE(targets)

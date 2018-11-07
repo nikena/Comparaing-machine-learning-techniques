@@ -1,13 +1,15 @@
+
+% clear;
+% load('facialPoints.mat');
+% load('labels.mat');
+% features = reshape(points, [150,132]);
+% targets = labels;
+
+
 % This function aims to find the maximum gain from all possible attributes
 % Output: 1. bestFeature = the attribute index corresponding maximum GAIN
 %         2. bestThreshold =  the attribute value corresponding maximum GAIN
-clear;
-load('facialPoints.mat');
-load('labels.mat');
-features = reshape(points, [150,132]);
-targets = labels;
-
-% function [bestFeature, bestThreshold] = ChooseAttribute(features, targets)
+function [bestFeature, bestThreshold] = ChooseAttribute(features, targets)
      
      [rows, cols] = size(features);
      bestGain = -inf;
@@ -28,7 +30,7 @@ targets = labels;
      end
      disp(bestFeature);
      disp(bestThreshold);
-% end
+end
 
 function entropy = getEntropy(targets)
     categoryOfTarget = categorical(targets); %tranfer double type to categorical type

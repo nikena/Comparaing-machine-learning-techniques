@@ -81,5 +81,4 @@ function gain = getGain(attribute, targets, threshold)
         
     remainder = lNums/totalNums * getEntropy(lTargets) + geNums/totalNums * getEntropy(geTargets);   
     gain = entropy  - remainder;
-  
 end

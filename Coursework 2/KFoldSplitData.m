@@ -1,7 +1,7 @@
 % @ Parameter  dataNums: the total number of data
 % @ Parameter  k: the number of fold
 % @ Return: train groups and test groups in binary number
-function  [splitTrainGroups, splitTestGroups, trainSize, testSize] = kFoldSplitData(dataNums, k)
+function  [splitTrainGroups, splitTestGroups, trainSize, testSize] = KFoldSplitData(dataNums, k)
     % Initialize train group and test group with k columns
     splitTrainGroups = ones(dataNums, k);  
     splitTestGroups = zeros(dataNums, k);

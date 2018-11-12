@@ -15,5 +15,5 @@ TA: Shashank
 
 cw1 report: https://docs.google.com/document/d/1_7SGLmsD8wnSthLFCfK-swSUC9QLM9-U01C-U0ls8lQ/edit?usp=sharing
 
-cw2 report: https://docs.google.com/document/d/1_7SGLmsD8wnSthLFCfK-swSUC9QLM9-U01C-U0ls8lQ/edit?usp=sharing
+cw2 report: https://docs.google.com/document/d/1-hKdWzipswDPZV8PvFOhGOPgA-srTzuAjbM2gcGTugg/edit?usp=sharing
 

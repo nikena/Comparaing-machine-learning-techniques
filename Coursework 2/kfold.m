@@ -27,7 +27,6 @@ function kfolddecisiontree = kfold(points, labels)
         %a temp tree to go through it and check the label
     
         for n = 1:size(testX, 1)
-            fprintf("%d x %d\n", size(testX, 1), size(testX, 2));
             temptree = tree;
 
             while ~isempty(temptree.kids)

@@ -9,7 +9,7 @@ function leaf = MajorityValue(targets)
     
     % Count number of 0s and 1s in targets and store in results array
     % (where index = target value + 1)
-    results = zeros([1:2]);
+    results = zeros(1:2);
     for i = 1:length(targets)
         results(targets(i) + 1) = results(targets(i) + 1) + 1;
     end

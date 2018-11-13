@@ -10,12 +10,12 @@ function decisionTree = DecisionTreeLearning(features, labels)
         decisionTree.class = labels(1);
         return
     else 
-        [bestFeature, bestThreshold] = ChooseAttribute(features, labels);
-    
+        [bestFeature, bestThreshold, entropy] = ChooseAttribute(features, labels);
+        
         decisionTree.kids = cell(1:2);
         decisionTree.attribute = bestFeature;
         decisionTree.threshold = bestThreshold;
-        decisionTree.op = num2str(bestFeature);
+        decisionTree.op = "feature("+num2str(bestFeature)+") <"+num2str(bestThreshold)+"  entropy: "+ num2str(entropy);
     
         leftData = features(features(:, bestFeature) < bestThreshold, :);
         rightData = features(features(:, bestFeature) >= bestThreshold, :);
@@ -24,12 +24,12 @@ function decisionTree = DecisionTreeLearning(features, labels)
         rightLabels = labels(features(:, bestFeature) >= bestThreshold);
     
         if isempty(leftData)
-            decisionTree.class = MajorityValue(leftLabels);
+            decisionTree.class = MajorityValue(labels); % leftLables
         else
             decisionTree.kids{1} = DecisionTreeLearning(leftData, leftLabels);
         end
         if isempty(rightData) 
-            decisionTree.class = MajorityValue(rightLabels);
+            decisionTree.class = MajorityValue(labels); % rightLables
         else
             decisionTree.kids{2} = DecisionTreeLearning(rightData, rightLabels);
         end

@@ -1,7 +1,7 @@
     clear
     load('labels');
     load('facialPoints');
-    points = reshape(points, [150, 132]);
+    points = reshape(points, [132, 150])';
     tree = DecisionTreeLearning(points,  labels);
     DrawDecisionTree(tree);
     

@@ -9,22 +9,23 @@
 % This function aims to find the maximum gain from all possible attributes
 % Output: 1. bestFeature = the attribute index corresponding maximum GAIN
 %         2. bestThreshold =  the attribute value corresponding maximum GAIN
-function [bestFeature, bestThreshold] = ChooseAttribute(features, targets)
+function [bestFeature, bestThreshold, bestEntropy] = ChooseAttribute(features, targets)
      
      [rows, cols] = size(features);
      bestGain = -inf;
      bestFeature = -inf;
      bestThreshold = -inf;
-     
+     bestEntropy = 0;
      for i = 1:cols  % iterate each feature
          for j = 1:rows % each feature's value as one possible threshold
              curThreshold = features(j ,i);
 %              disp("i = "+i+", j = "+j);
-             gain = getGain(features(:,i), targets, curThreshold);
+             [gain, entropy] = getGain(features(:,i), targets, curThreshold);
              if gain >= bestGain
                  bestGain = gain;
                  bestFeature = i;
                  bestThreshold = curThreshold;
+                 bestEntropy = entropy;
              end
          end
      end
@@ -59,7 +60,7 @@ function entropy = getEntropy(targets)
 
 end
 
-function gain = getGain(attribute, targets, threshold)
+function [gain, entropy] = getGain(attribute, targets, threshold)
     entropy = getEntropy(targets);
     
     [sortAttribute, preIndex] = sort(attribute);

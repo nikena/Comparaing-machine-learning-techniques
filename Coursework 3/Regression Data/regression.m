@@ -8,11 +8,10 @@ Y = pose(:,6); % data format: 8955 x 1 double
 KernelFunction = ["linear", "RBF", "polynomial"];
 svmtype = KernelFunction(2); % change the kernel function type here
 
-C = [0.1, 1, 10]; %C = [0.1, 1, 10, 50, 100, 1000];
-Epsilon = [0.1, 0.3, 0.5]; %Epsilon = [0.1, 0.3, 0.5, 0.8, 1.0];
-Sigma = [0.01, 0.1, 10]; % Sigma = [0.01, 0.1, 10, 50, 100, 1000]; % use for RBF kernel scale"
-Q = [2, 3, 4];
-%Q = [1, 2, 3, 4, 5, 6]; % use for Polynomial order
+C = [1, 10, 50, 100]; %C = [0.1, 1, 10, 50, 100, 1000];
+Epsilon = [0.1, 0.3, 0.5, 1.0]; %Epsilon = [0.1, 0.3, 0.5, 0.8, 1.0];
+Sigma = [1, 10, 50, 100]; % Sigma = [0.01, 0.1, 10, 50, 100, 1000]; % use for RBF kernel scale"
+Q = [1, 2, 3];% use for Polynomial order
 
 % inner-fold-cross-validation use for finding optimal hyperparameters
 n = 3;
@@ -20,7 +19,7 @@ n = 3;
 k = 10;
 
 % initial tunning performance outcome matrix, using for record all the
-% tuning outcome by grid search
+% tuning outcome by grid searh
 TuningPerfList = [];
 paraNums = 0;
 switch (svmtype)
@@ -50,9 +49,10 @@ for i = 1:k
     
     
     % beginning of inner loop, only for the first iteration of outer loop to
-    % tune parameters 
+    % tune parameters
+    
     if i == 1
-        [in_TrainGroups, in_TestGroups, in_TrainSize, in_TestSize] = KFoldSplitData(out_TrainSize(i), n);
+        [in_TrainGroups, in_TestGroups, in_TrainSize, in_TestSize] = KFoldSplitData(out_TrainSize(i), n);                  
         for j = 1:n
             in_trainIdx = in_TrainGroups(:,j); 
             in_testIdx = in_TestGroups(:,j);
@@ -61,11 +61,11 @@ for i = 1:k
             in_trainX = out_trainX(in_trainIdx, :);
             in_trainY = out_trainY(in_trainIdx);
             % get test data in inner loop cross validation 
-            in_testX = out_trainX(in_trainIdx, :);
-            in_testY = out_trainY(in_trainIdx);
+            in_testX = out_trainX(in_testIdx, :);
+            in_testY = out_trainY(in_testIdx);
             
             % type of svm to work with if we want to tune rbf
-            % 'Standardize',true
+            % 
             if svmtype == "RBF"
                 num = 0;
                 totalNum = length(C)*length(Epsilon)*length(Sigma);
@@ -77,7 +77,9 @@ for i = 1:k
                             rmse = sqrt(mseVal);
                             num = num + 1;
                             TuningPerfList(num,:,j) = [C(c),Epsilon(e),Sigma(s),rmse];
-                            disp("tuning iteration: "+j+"/"+n+", times: "+num+"/"+totalNum+", rmse: "+ rmse);
+                            supportVNums = size(Mdl.SupportVectors,1);
+                            supportVRetio = supportVNums/size(in_trainX,1);
+                            disp("tuning iteration: "+j+"/"+n+", KernelFunction: "+svmtype + ", times: "+num+"/"+totalNum+", supVec Nums: "+supportVNums+", supVec Retio: "+supportVRetio+", rmse: "+ rmse);
                         end
                     end
                 end
@@ -87,12 +89,12 @@ for i = 1:k
                 for c = 1:length(C)
                     for e = 1: length(Epsilon)
                         for q = 1: length(Q)
-                            Mdl = fitrsvm(in_trainX, in_trainY,'KernelFunction',"polynomial", 'BoxConstraint', C(c), 'Epsilon', Epsilon(e), 'PolynomialOrder', Q(q));
+                            Mdl = fitrsvm(in_trainX, in_trainY,'KernelFunction',"polynomial", 'BoxConstraint', C(c), 'Epsilon', Epsilon(e), 'PolynomialOrder', Q(q), 'Standardize',true);
                             mseVal = loss(Mdl, in_testX, in_testY);
                             rmse = sqrt(mseVal);
                             num = num + 1;
                             TuningPerfList(num,:,j) = [C(c),Epsilon(e),Q(q),rmse];
-                            disp("tuning iteration: "+j+"/"+n+", times: "+num+"/"+totalNum+", rmse: "+ rmse);
+                            disp("tuning iteration: "+j+"/"+n+", KernelFunction: "+svmtype + ", times: "+num+"/"+totalNum+", rmse: "+ rmse);
                         end
                     end
                 end
@@ -101,12 +103,12 @@ for i = 1:k
                 totalNum = length(C)*length(Epsilon);
                 for c = 1:length(C)
                     for e = 1: length(Epsilon)
-                        Mdl = fitrsvm(in_trainX, in_trainY,'KernelFunction',"linear", 'BoxConstraint', C(c), 'Epsilon', Epsilon(e));
+                        Mdl = fitrsvm(in_trainX, in_trainY,'KernelFunction',"linear", 'BoxConstraint', C(c), 'Epsilon', Epsilon(e),'Standardize',true);
                         mseVal = loss(Mdl, in_testX, in_testY);
                         rmse = sqrt(mseVal);
                         num = num + 1;
                         TuningPerfList(num,:,j) = [C(c),Epsilon(e),rmse];
-                        disp("tuning iteration: "+j+"/"+n+", times: "+num+"/"+totalNum+", rmse: "+ rmse);
+                        disp("tuning iteration: "+j+"/"+n+", KernelFunction: "+svmtype + ", times: "+num+"/"+totalNum+", rmse: "+ rmse);
                     end
                 end
             end            
@@ -114,7 +116,7 @@ for i = 1:k
         avg_tuningPerfList = (TuningPerfList(:,:,1) + TuningPerfList(:,:,2) + TuningPerfList(:,:,3)) / 3;
         [bestRmse, bestIndex] = min(avg_tuningPerfList(:,paraNums+1));
         bestValue = avg_tuningPerfList(bestIndex,:);
-        disp("bestParameter: " + bestValue);
+        disp(bestValue);
     end    
     
     % train the SVM model using best parameters which tunned by grid search
@@ -127,8 +129,8 @@ for i = 1:k
             SVM = fitrsvm(out_trainX, out_trainY,'KernelFunction',"polynomial", 'BoxConstraint', bestValue(1), 'Epsilon', bestValue(2), 'PolynomialOrder', bestValue(3));
     end
     mseVal = loss(SVM, out_testX, out_testY);
-    rmseList(k) = sqrt(mseVal);
-    disp("Train SVM iteration: "+i+"/" +"k"+ " ,rmse: "+rmseList(k));
+    rmseList(i) = sqrt(mseVal);
+    disp("Train SVM iteration: "+i+"/" +k+ " ,rmse: "+rmseList(i));
 end
 avgRmseList =  mean(rmseList);
 disp("Avg 10 Fold rmse: " + avgRmseList);

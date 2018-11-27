@@ -1,3 +1,4 @@
+
 clear;
 load 'facialPoints.mat'
 load 'headpose.mat'
@@ -6,11 +7,11 @@ Y = pose(:,6); % data format: 8955 x 1 double
 
 % hyper-parameter possible value
 KernelFunction = ["linear", "RBF", "polynomial"];
-svmtype = KernelFunction(2); % change the kernel function type here
+svmtype = KernelFunction(3); % change the kernel function type here
 
-C = [1, 10, 50, 100]; %C = [0.1, 1, 10, 50, 100, 1000];
-Epsilon = [0.1, 0.3, 0.5, 1.0]; %Epsilon = [0.1, 0.3, 0.5, 0.8, 1.0];
-Sigma = [1, 10, 50, 100]; % Sigma = [0.01, 0.1, 10, 50, 100, 1000]; % use for RBF kernel scale"
+C = [0.1, 1, 100]; 
+Epsilon = [0.3, 0.5, 1.0]; 
+Sigma = [1, 50, 100]; % use for RBF kernel scale"
 Q = [1, 2, 3];% use for Polynomial order
 
 % inner-fold-cross-validation use for finding optimal hyperparameters
@@ -24,16 +25,16 @@ TuningPerfList = [];
 paraNums = 0;
 switch (svmtype)
     case "linear"
-        TuningPerfList = zeros(length(C)*length(Epsilon),3,n); % save linear performance results
+        TuningPerfList = zeros(length(C)*length(Epsilon),5,n); % save linear performance results
         paraNums = 2;
     case "RBF"
-        TuningPerfList = zeros(length(C)*length(Epsilon)*length(Sigma),4,n); % save RBF tuning parameter results
+        TuningPerfList = zeros(length(C)*length(Epsilon)*length(Sigma),6,n); % save RBF tuning parameter results
         paraNums = 3;
     case "polynomial"
-        TuningPerfList = zeros(length(C)*length(Epsilon)*length(Q),4,n); % save Polynomial parameter results
+        TuningPerfList = zeros(length(C)*length(Epsilon)*length(Q),6,n); % save Polynomial parameter results
         paraNums = 3;
 end
-bestValue = zeros(1, paraNums+1); %initial best Parameter
+bestValue = zeros(1, paraNums+3); %initial best Parameter
 rmseList = zeros(1, k); % initial rmse array using for save each rmse in each iteration (10-fold)
 [out_TrainGroups, out_TestGroups, out_TrainSize, out_TestSize] = KFoldSplitData(size(Y,1), 10);
 for i = 1:k
@@ -75,11 +76,11 @@ for i = 1:k
                             Mdl = fitrsvm(in_trainX, in_trainY,'KernelFunction',"RBF", 'BoxConstraint', C(c), 'Epsilon', Epsilon(e), 'KernelScale', Sigma(s));
                             mseVal = loss(Mdl, in_testX, in_testY);
                             rmse = sqrt(mseVal);
-                            num = num + 1;
-                            TuningPerfList(num,:,j) = [C(c),Epsilon(e),Sigma(s),rmse];
+                            num = num + 1;                      
                             supportVNums = size(Mdl.SupportVectors,1);
-                            supportVRetio = supportVNums/size(in_trainX,1);
-                            disp("tuning iteration: "+j+"/"+n+", KernelFunction: "+svmtype + ", times: "+num+"/"+totalNum+", supVec Nums: "+supportVNums+", supVec Retio: "+supportVRetio+", rmse: "+ rmse);
+                            supportVRatio = supportVNums/size(in_trainX,1);
+                            TuningPerfList(num,:,j) = [C(c),Epsilon(e),Sigma(s),supportVNums, supportVRatio, rmse];
+                            disp("tuning iteration: "+j+"/"+n+", KernelFunction: "+svmtype + ", times: "+num+"/"+totalNum+", supVec Nums: "+supportVNums+", supVec Ratio: "+supportVRatio+", rmse: "+ rmse);
                         end
                     end
                 end
@@ -89,12 +90,14 @@ for i = 1:k
                 for c = 1:length(C)
                     for e = 1: length(Epsilon)
                         for q = 1: length(Q)
-                            Mdl = fitrsvm(in_trainX, in_trainY,'KernelFunction',"polynomial", 'BoxConstraint', C(c), 'Epsilon', Epsilon(e), 'PolynomialOrder', Q(q), 'Standardize',true);
+                            Mdl = fitrsvm(in_trainX, in_trainY,'KernelFunction',"polynomial", 'BoxConstraint', C(c), 'Epsilon', Epsilon(e), 'PolynomialOrder', Q(q));
                             mseVal = loss(Mdl, in_testX, in_testY);
                             rmse = sqrt(mseVal);
                             num = num + 1;
-                            TuningPerfList(num,:,j) = [C(c),Epsilon(e),Q(q),rmse];
-                            disp("tuning iteration: "+j+"/"+n+", KernelFunction: "+svmtype + ", times: "+num+"/"+totalNum+", rmse: "+ rmse);
+                            supportVNums = size(Mdl.SupportVectors,1);
+                            supportVRatio = supportVNums/size(in_trainX,1);
+                            TuningPerfList(num,:,j) = [C(c),Epsilon(e),Q(q),supportVNums, supportVRatio,rmse];
+                            disp("tuning iteration: "+j+"/"+n+", KernelFunction: "+svmtype + ", times: "+num+"/"+totalNum+", supVec Nums: "+supportVNums+", supVec Ratio: "+supportVRatio+", rmse: "+ rmse);
                         end
                     end
                 end
@@ -107,18 +110,20 @@ for i = 1:k
                         mseVal = loss(Mdl, in_testX, in_testY);
                         rmse = sqrt(mseVal);
                         num = num + 1;
-                        TuningPerfList(num,:,j) = [C(c),Epsilon(e),rmse];
-                        disp("tuning iteration: "+j+"/"+n+", KernelFunction: "+svmtype + ", times: "+num+"/"+totalNum+", rmse: "+ rmse);
+                        supportVNums = size(Mdl.SupportVectors,1);
+                        supportVRatio = supportVNums/size(in_trainX,1);
+                        TuningPerfList(num,:,j) = [C(c),Epsilon(e),supportVNums, supportVRatio, rmse];
+                        disp("tuning iteration: "+j+"/"+n+", KernelFunction: "+svmtype + ", times: "+num+"/"+totalNum+", supVec Nums: "+supportVNums+", supVec Ratio: "+supportVRatio+", rmse: "+ rmse);
                     end
                 end
             end            
         end
         avg_tuningPerfList = (TuningPerfList(:,:,1) + TuningPerfList(:,:,2) + TuningPerfList(:,:,3)) / 3;
-        [bestRmse, bestIndex] = min(avg_tuningPerfList(:,paraNums+1));
+        [bestRmse, bestIndex] = min(avg_tuningPerfList(:,paraNums+3));
         bestValue = avg_tuningPerfList(bestIndex,:);
         disp(bestValue);
     end    
-    
+   
     % train the SVM model using best parameters which tunned by grid search
     switch(svmtype)
         case "linear"
